@@ -38,9 +38,9 @@ The executable will be located in `./target/release/fsmc`.
 Run the compiler by providing a `.fsm` file as an argument:
 
 ```bash
-cargo run -- lander.fsm
+cargo run -- example/lander.fsm
 # OR if built:
-./target/release/fsmc lander.fsm
+./target/release/fsmc example/lander.fsm
 ```
 
 ### Output
@@ -51,7 +51,7 @@ The compiler produces two files in the same directory as the input:
 
 ## The FSM Language
 
-The input format is simple and intuitive. Here is an example describing a spacecraft landing sequence (`lander.fsm`):
+The input format is simple and intuitive. Here is an example describing a spacecraft landing sequence (`example/lander.fsm`):
 
 ```javascript
 machine Lander {
@@ -71,9 +71,27 @@ machine Lander {
         on ChuteFailure -> Crash;
         on LowAltitude -> PoweredDescent;
     }
-    // ... other states
+    state PoweredDescent {
+        on EngineFailure -> Crash;
+        on FuelDepleted -> Landing;
+        on Correction -> PoweredDescent;
+    }
+    state Landing {
+        on Touchdown -> Safe;
+        on TipOver -> Crash;
+    }
+    state Safe {
+        on Shutdown -> Finished;
+    }
+    state Crash {
+        on RecoveryAttempt -> Cruise;
+    }
+    state BurnUp {}
+    state Finished {}
 }
 ```
+
+![Lander FSM Diagram](example/lander.png)
 
 ### Syntax Guide
 *   **`machine Name { ... }`**: Defines the FSM container.
@@ -82,28 +100,31 @@ machine Lander {
 
 ## Workflow Example
 
-1.  **Write your FSM** in `lander.fsm`.
+1.  **Write your FSM** in `example/lander.fsm`.
 2.  **Compile it:**
     ```bash
-    cargo run -- lander.fsm
+    cargo run -- example/lander.fsm
     ```
 3.  **Visualize the graph** (requires Graphviz):
     ```bash
-    dot -Tpng lander.dot -o lander.png
-    open lander.png
+    dot -Tpng example/lander.dot -o example/lander.png
+    open example/lander.png
     ```
 4.  **Compile the C code:**
     ```bash
-    gcc -o lander lander.c
+    gcc -o lander example/lander.c
     ./lander
     ```
 
 ## Generated C Code Structure
 
-The generated C file typically includes:
-*   `enum` definitions for **States** and **Events**.
-*   A state machine struct.
-*   A transition function that accepts the current state and an event, returning the next state.
+The generated C file is self-contained and typically includes:
+*   `typedef enum` definitions for **States**.
+*   `state_name`: A helper function to get the string representation of a state.
+*   `is_terminal`: A helper function to check if a state is a terminal state.
+*   `print_available_events`: A helper function to list valid events for the current state.
+*   `next_state`: The core transition function that accepts the current state and an event string, returning the next state.
+*   `main`: A driver loop that allows you to interact with the FSM via standard input.
 
 ## License
 
