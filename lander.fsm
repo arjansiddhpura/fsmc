@@ -1,0 +1,35 @@
+machine Lander {
+    state Cruise {
+        on EntryInterface -> AtmosphericEntry;
+    }
+    state AtmosphericEntry {
+        on HeatShieldFailure -> BurnUp;
+        on StableDescend -> ParachuteDeploy;
+        on Turbulence -> AtmosphericEntry;
+    }
+    state ParachuteDeploy {
+        on ChuteFailure -> BackupChute;
+        on LowAltitude -> PoweredDescent;
+    }
+    state BackupChute {
+        on ChuteFailure -> Crash;
+        on LowAltitude -> PoweredDescent;
+    }
+    state PoweredDescent {
+        on EngineFailure -> Crash;
+        on FuelDepleted -> Landing;
+        on Correction -> PoweredDescent;
+    }
+    state Landing {
+        on Touchdown -> Safe;
+        on TipOver -> Crash;
+    }
+    state Safe {
+        on Shutdown -> Finished;
+    }
+    state Crash {
+        on RecoveryAttempt -> Cruise;
+    }
+    state BurnUp {}
+    state Finished {}
+}

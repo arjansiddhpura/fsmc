@@ -1,0 +1,17 @@
+digraph {
+    Cruise -> AtmosphericEntry [label="EntryInterface"];
+    AtmosphericEntry -> BurnUp [label="HeatShieldFailure"];
+    AtmosphericEntry -> ParachuteDeploy [label="StableDescend"];
+    AtmosphericEntry -> AtmosphericEntry [label="Turbulence"];
+    ParachuteDeploy -> BackupChute [label="ChuteFailure"];
+    ParachuteDeploy -> PoweredDescent [label="LowAltitude"];
+    BackupChute -> Crash [label="ChuteFailure"];
+    BackupChute -> PoweredDescent [label="LowAltitude"];
+    PoweredDescent -> Crash [label="EngineFailure"];
+    PoweredDescent -> Landing [label="FuelDepleted"];
+    PoweredDescent -> PoweredDescent [label="Correction"];
+    Landing -> Safe [label="Touchdown"];
+    Landing -> Crash [label="TipOver"];
+    Safe -> Finished [label="Shutdown"];
+    Crash -> Cruise [label="RecoveryAttempt"];
+}
